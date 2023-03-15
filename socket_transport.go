@@ -61,6 +61,8 @@ func (st *socketTransport) pingLoop() {
 
 func (st *socketTransport) listen() {
 	for {
+		fmt.Printf("reading message...\n")
+
 		msgType, data, err := st.socket.ReadMessage()
 
 		if err != nil {
