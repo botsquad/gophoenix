@@ -55,10 +55,10 @@ func (st *socketTransport) listen() {
 		err := st.socket.ReadJSON(msg)
 
 		if err != nil {
-			fmt.Printf("JSON error: %V", err)
+			fmt.Printf("JSON error")
+			fmt.Println(err)
 			continue
 		}
-		fmt.Printf("got message: %v", msg)
 
 		st.mr.NotifyMessage(msg)
 	}
