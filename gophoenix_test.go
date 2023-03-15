@@ -21,7 +21,8 @@ func (t MyConnectionReceiver) NotifyConnect() {
 	channel.ch = ch
 }
 func (t MyConnectionReceiver) NotifyDisconnect() {
-	fmt.Println("NotifyDisconnect")
+	fmt.Println("NotifyDisconnect--")
+	t.wg.Done()
 }
 
 type MyChannelReceiver struct {
@@ -46,7 +47,6 @@ func (t MyChannelReceiver) OnJoin(payload interface{}) {
 }
 func (t MyChannelReceiver) OnJoinError(payload interface{}) {
 	fmt.Println("OnJoinError", "payload", payload)
-	t.wg.Done()
 }
 func (t MyChannelReceiver) OnChannelClose(payload interface{}) {
 	fmt.Println("OnChannelClose", "payload", payload)
@@ -71,5 +71,8 @@ func TestSocket(t *testing.T) {
 	fmt.Println("done")
 	wg.Wait()
 	fmt.Println("done2")
+	wg.Add(1)
 	client.Close()
+	wg.Wait()
+	fmt.Println("done3")
 }

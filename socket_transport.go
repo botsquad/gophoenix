@@ -40,39 +40,34 @@ func (st *socketTransport) Push(data interface{}) error {
 }
 
 func (st *socketTransport) Close() {
-	st.close <- struct{}{}
-	<-st.done
+	st.socket.Close()
+	st.cr.NotifyDisconnect()
+	func() { st.done <- struct{}{} }()
 }
 
 func (st *socketTransport) pingLoop() {
 	for {
+		timer := time.NewTimer(2 * time.Second)
+
 		select {
 		case <-st.close:
 			return
-		default:
+		case <-timer.C:
+			st.socket.WriteControl(websocket.PingMessage, []byte(""), time.Now().Add(time.Second))
 		}
 
-		time.Sleep(10 * time.Second)
-
-		st.socket.WriteControl(websocket.PingMessage, []byte(""), time.Now().Add(time.Second))
 	}
 }
 
 func (st *socketTransport) listen() {
-	defer st.stop()
 	for {
-		select {
-		case <-st.close:
-			fmt.Println("close???")
-			return
-		default:
-		}
-
 		msgType, data, err := st.socket.ReadMessage()
 
 		if err != nil {
-			fmt.Println(err)
-			continue
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				fmt.Println(err)
+			}
+			return
 		}
 
 		if msgType != websocket.TextMessage {
@@ -116,10 +111,4 @@ func (st *socketTransport) listen() {
 
 		st.mr.NotifyMessage(&msg)
 	}
-}
-
-func (st *socketTransport) stop() {
-	st.socket.Close()
-	st.cr.NotifyDisconnect()
-	func() { st.done <- struct{}{} }()
 }
