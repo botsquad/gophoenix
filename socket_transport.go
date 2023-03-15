@@ -74,6 +74,8 @@ func (st *socketTransport) listen() {
 			continue
 		}
 
+		fmt.Printf("Text data: %s\n", data)
+
 		var arr []interface{}
 		err = json.Unmarshal([]byte(data), &arr)
 
