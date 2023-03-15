@@ -4,10 +4,10 @@ import "sync"
 
 type replyRouter struct {
 	mapLock sync.RWMutex
-	rr map[int64]replyCallback
+	rr      map[int64]replyCallback
 }
 
-type replyCallback func (payload interface{})
+type replyCallback func(payload interface{})
 
 func newReplyRouter() *replyRouter {
 	return &replyRouter{

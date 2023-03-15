@@ -6,15 +6,15 @@ import (
 
 // Client is the entry point for a phoenix channel connection.
 type Client struct {
-	t Transport
+	t  Transport
 	mr *messageRouter
 	cr ConnectionReceiver
 }
 
 // NewWebsocketClient creates the default connection using a websocket as the transport.
 func NewWebsocketClient(cr ConnectionReceiver) *Client {
-	return &Client {
-		t: &socketTransport{},
+	return &Client{
+		t:  &socketTransport{},
 		cr: cr,
 	}
 }
@@ -48,7 +48,7 @@ func (c *Client) Join(callbacks ChannelReceiver, topic string, payload interface
 	}
 
 	rr := newReplyRouter()
-	ch := &Channel{topic: topic, t: c.t, rc: &atomicRef{ref: new(int64)}, rr: rr, ln: func() {c.mr.unsubscribe(topic)}}
+	ch := &Channel{topic: topic, t: c.t, rc: &atomicRef{ref: new(int64)}, rr: rr, ln: func() { c.mr.unsubscribe(topic) }}
 	c.mr.subscribe(topic, callbacks, rr)
 	err := ch.join(payload)
 
