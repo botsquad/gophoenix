@@ -64,6 +64,7 @@ func (st *socketTransport) listen() {
 		msgType, data, err := st.socket.ReadMessage()
 
 		if err != nil {
+			fmt.Printf("ERROR: %v\n", err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				fmt.Println(err)
 			}
