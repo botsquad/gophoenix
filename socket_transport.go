@@ -1,8 +1,10 @@
 package gophoenix
 
 import (
-	"github.com/gorilla/websocket"
+	"fmt"
 	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 
 type socketTransport struct {
@@ -53,8 +55,10 @@ func (st *socketTransport) listen() {
 		err := st.socket.ReadJSON(msg)
 
 		if err != nil {
+			fmt.Printf("JSON error: %V", err)
 			continue
 		}
+		fmt.Printf("got message: %v", msg)
 
 		st.mr.NotifyMessage(msg)
 	}
