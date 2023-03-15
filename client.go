@@ -2,7 +2,6 @@ package gophoenix
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 )
 
