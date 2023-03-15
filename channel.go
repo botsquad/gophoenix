@@ -1,6 +1,7 @@
 package gophoenix
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -10,11 +11,8 @@ type Channel struct {
 	t       Transport
 	rc      refCounter
 	rr      *replyRouter
-	ln      leaveNotifier
 	joinRef int64
 }
-
-type leaveNotifier func()
 
 type refCounter interface {
 	nextRef() int64
@@ -22,15 +20,19 @@ type refCounter interface {
 
 // Leave notifies the channel to unsubscribe from messages on the topic.
 func (ch *Channel) Leave(payload interface{}) error {
-	defer ch.ln()
 	ref := ch.rc.nextRef()
+	ch.rr.subscribe(ref, func(p interface{}) {
+		fmt.Println("leave OK")
+	}, func(p interface{}) {
+		fmt.Println("leave fail")
+	})
 	return ch.sendMessage(ref, LeaveEvent, payload)
 }
 
 // Push sends a message on the topic.
-func (ch *Channel) Push(event string, payload interface{}, replyHandler func(payload interface{})) error {
+func (ch *Channel) Push(event string, payload interface{}, replyHandler replyCallback, errorHandler replyCallback) error {
 	ref := ch.rc.nextRef()
-	ch.rr.subscribe(ref, replyHandler)
+	ch.rr.subscribe(ref, replyHandler, errorHandler)
 	return ch.sendMessage(ref, event, payload)
 }
 
@@ -42,16 +44,7 @@ func (ch *Channel) PushNoReply(event string, payload interface{}) error {
 
 func (ch *Channel) join(callbacks ChannelReceiver, payload interface{}) error {
 	ref := ch.rc.nextRef()
-	ch.rr.subscribe(ref, func(p interface{}) {
-		message := p.(map[string]interface{})
-
-		if message["status"] == "ok" {
-			callbacks.OnJoin(message["response"])
-		}
-		if message["status"] == "error" {
-			callbacks.OnJoinError(message["response"])
-		}
-	})
+	ch.rr.subscribe(ref, callbacks.OnJoin, callbacks.OnJoinError)
 	return ch.sendMessage(ref, JoinEvent, payload)
 }
 

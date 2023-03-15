@@ -55,7 +55,6 @@ func (st *socketTransport) pingLoop() {
 		time.Sleep(10 * time.Second)
 
 		st.socket.WriteControl(websocket.PingMessage, []byte(""), time.Now().Add(time.Second))
-		fmt.Println("ping")
 	}
 }
 
@@ -64,6 +63,7 @@ func (st *socketTransport) listen() {
 	for {
 		select {
 		case <-st.close:
+			fmt.Println("close???")
 			return
 		default:
 		}
@@ -72,11 +72,6 @@ func (st *socketTransport) listen() {
 
 		if err != nil {
 			fmt.Println(err)
-			continue
-		}
-
-		if msgType == websocket.PingMessage {
-			fmt.Println("got ping")
 			continue
 		}
 
@@ -117,7 +112,7 @@ func (st *socketTransport) listen() {
 		msg.JoinRef = int64(joinRef)
 		msg.Topic = arr[2].(string)
 		msg.Event = arr[3].(string)
-		msg.Payload = arr[4]
+		msg.Payload = arr[4].(map[string]interface{})
 
 		st.mr.NotifyMessage(&msg)
 	}

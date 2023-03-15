@@ -4,7 +4,7 @@ package gophoenix
 type Message struct {
 	Topic   string
 	Event   string
-	Payload interface{}
+	Payload map[string]interface{}
 	Ref     int64
 	JoinRef int64
 }

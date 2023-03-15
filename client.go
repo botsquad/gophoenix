@@ -56,7 +56,6 @@ func (c *Client) Join(callbacks ChannelReceiver, topic string, payload interface
 		t:       c.t,
 		rc:      &atomicRef{ref: new(int64)},
 		rr:      rr,
-		ln:      func() { c.mr.unsubscribe(joinRef) },
 	}
 	c.mr.subscribe(joinRef, callbacks, rr)
 	err := ch.join(callbacks, payload)
