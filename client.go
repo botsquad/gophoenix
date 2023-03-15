@@ -2,6 +2,8 @@ package gophoenix
 
 import (
 	"errors"
+	"fmt"
+	"net/url"
 )
 
 // Client is the entry point for a phoenix channel connection.
@@ -23,12 +25,18 @@ func NewWebsocketClient(cr ConnectionReceiver) *Client {
 }
 
 // Connect should be called to establish the connection through the transport.
-func (c *Client) Connect(url string) error {
+func (c *Client) Connect(rawUrl string, params url.Values) error {
 	if c.t == nil {
 		return errors.New("transport not provided")
 	}
-
-	return c.t.Connect(url, c.mr, c.cr)
+	if params == nil {
+		params = url.Values{}
+	}
+	url, _ := url.Parse(rawUrl)
+	url = url.JoinPath("websocket")
+	params.Add("vsn", "2.0.0")
+	url.RawQuery = params.Encode()
+	return c.t.Connect(url.String(), c.mr, c.cr)
 }
 
 // Close closes the connection via the transport.

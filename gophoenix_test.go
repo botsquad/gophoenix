@@ -2,6 +2,7 @@ package gophoenix
 
 import (
 	"fmt"
+	"net/url"
 	"sync"
 	"testing"
 	"time"
@@ -67,7 +68,9 @@ func TestSocket(t *testing.T) {
 
 	wg.Add(1)
 
-	client.Connect("wss://arjan.ngrok.io/socket/websocket?vsn=2.0.0")
+	params := url.Values{}
+	params.Add("foo", "bar")
+	client.Connect("wss://arjan.ngrok.io/socket", params)
 	fmt.Println("done")
 	wg.Wait()
 	fmt.Println("done2")
