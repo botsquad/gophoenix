@@ -9,6 +9,7 @@ type Client struct {
 	t  Transport
 	mr *messageRouter
 	cr ConnectionReceiver
+	rc refCounter
 }
 
 // NewWebsocketClient creates the default connection using a websocket as the transport.
@@ -17,6 +18,7 @@ func NewWebsocketClient(cr ConnectionReceiver) *Client {
 		t:  &socketTransport{},
 		mr: newMessageRouter(),
 		cr: cr,
+		rc: &atomicRef{ref: new(int64)},
 	}
 }
 
@@ -47,9 +49,17 @@ func (c *Client) Join(callbacks ChannelReceiver, topic string, payload interface
 	}
 
 	rr := newReplyRouter()
-	ch := &Channel{topic: topic, t: c.t, rc: &atomicRef{ref: new(int64)}, rr: rr, ln: func() { c.mr.unsubscribe(topic) }}
-	c.mr.subscribe(topic, callbacks, rr)
-	err := ch.join(payload)
+	joinRef := c.rc.nextRef()
+	ch := &Channel{
+		joinRef: joinRef,
+		topic:   topic,
+		t:       c.t,
+		rc:      &atomicRef{ref: new(int64)},
+		rr:      rr,
+		ln:      func() { c.mr.unsubscribe(joinRef) },
+	}
+	c.mr.subscribe(joinRef, callbacks, rr)
+	err := ch.join(callbacks, payload)
 
 	if err != nil {
 		return nil, err

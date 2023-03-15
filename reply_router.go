@@ -24,6 +24,10 @@ func (rr *replyRouter) routeReply(msg *Message) {
 		return
 	}
 
+	rr.mapLock.Lock()
+	delete(rr.rr, msg.Ref)
+	rr.mapLock.Unlock()
+
 	rc(msg.Payload)
 }
 

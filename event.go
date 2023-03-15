@@ -1,19 +1,16 @@
 package gophoenix
 
-// Event represents a phoenix channel event for a message.
-type Event string
-
 const (
 	// MessageEvent represents a regular message on a topic.
-	MessageEvent Event = "phx_message"
+	MessageEvent string = "phx_message"
 	// JoinEvent represents a successful join on a channel.
-	JoinEvent Event = "phx_join"
+	JoinEvent string = "phx_join"
 	// CloseEvent represents the closing of a channel.
-	CloseEvent Event = "phx_close"
+	CloseEvent string = "phx_close"
 	// ErrorEvent represents an error.
-	ErrorEvent Event = "phx_error"
+	ErrorEvent string = "phx_error"
 	// ReplyEvent represents a reply to a message sent on a topic.
-	ReplyEvent Event = "phx_reply"
+	ReplyEvent string = "phx_reply"
 	// LeaveEvent represents leaving a channel and unsubscribing from a topic.
-	LeaveEvent Event = "phx_leave"
+	LeaveEvent string = "phx_leave"
 )

@@ -2,4 +2,6 @@ module github.com/botsquad/gophoenix
 
 go 1.20
 
-require github.com/gorilla/websocket v1.1.0
+require github.com/gorilla/websocket v1.5.0
+
+require github.com/mitchellh/mapstructure v1.5.0 // indirect

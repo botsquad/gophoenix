@@ -1,10 +1,12 @@
 package gophoenix
 
-import "sync"
+import (
+	"sync"
+)
 
 type messageRouter struct {
 	mapLock sync.RWMutex
-	tr      map[string]*topicReceiver
+	tr      map[int64]*topicReceiver
 	sub     chan ChannelReceiver
 }
 
@@ -15,15 +17,15 @@ type topicReceiver struct {
 
 func newMessageRouter() *messageRouter {
 	return &messageRouter{
-		tr:  make(map[string]*topicReceiver),
+		tr:  make(map[int64]*topicReceiver),
 		sub: make(chan ChannelReceiver),
 	}
 }
 
 func (mr *messageRouter) NotifyMessage(msg *Message) {
 	mr.mapLock.RLock()
-	tr, ok := mr.tr[msg.Topic]
-	mr.mapLock.Unlock()
+	tr, ok := mr.tr[msg.JoinRef]
+	mr.mapLock.RUnlock()
 	if !ok {
 		return
 	}
@@ -31,27 +33,27 @@ func (mr *messageRouter) NotifyMessage(msg *Message) {
 	switch msg.Event {
 	case ReplyEvent:
 		tr.rr.routeReply(msg)
-	case JoinEvent:
-		tr.cr.OnJoin(msg.Payload)
-	case ErrorEvent:
-		tr.cr.OnJoinError(msg.Payload)
-		mr.unsubscribe(msg.Topic)
-	case CloseEvent:
-		tr.cr.OnChannelClose(msg.Payload)
-		mr.unsubscribe(msg.Topic)
+	// case JoinEvent:
+	// 	tr.cr.OnJoin(msg.Payload)
+	// case ErrorEvent:
+	// 	tr.cr.OnJoinError(msg.Payload)
+	// 	mr.unsubscribe(msg.JoinRef)
+	// case CloseEvent:
+	// 	tr.cr.OnChannelClose(msg.Payload)
+	// 	mr.unsubscribe(msg.JoinRef)
 	default:
 		tr.cr.OnMessage(msg.Event, msg.Payload)
 	}
 }
 
-func (mr *messageRouter) subscribe(topic string, cr ChannelReceiver, rr *replyRouter) {
+func (mr *messageRouter) subscribe(joinRef int64, cr ChannelReceiver, rr *replyRouter) {
 	mr.mapLock.Lock()
 	defer mr.mapLock.Unlock()
-	mr.tr[topic] = &topicReceiver{cr: cr, rr: rr}
+	mr.tr[joinRef] = &topicReceiver{cr: cr, rr: rr}
 }
 
-func (mr *messageRouter) unsubscribe(topic string) {
+func (mr *messageRouter) unsubscribe(joinRef int64) {
 	mr.mapLock.Lock()
 	defer mr.mapLock.Unlock()
-	delete(mr.tr, topic)
+	delete(mr.tr, joinRef)
 }
