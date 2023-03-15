@@ -1,10 +1,5 @@
 package gophoenix
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
 // Channel represents a subscription to a topic. It is returned from the Client after joining a topic.
 type Channel struct {
 	topic string
@@ -53,11 +48,5 @@ func (ch *Channel) sendMessage(ref int64, event Event, payload interface{}) erro
 		Ref:     ref,
 	}
 
-	data, err := json.Marshal(msg)
-
-	if err != nil {
-		return fmt.Errorf("unable to marshal message: %s", err)
-	}
-
-	return ch.t.Push(data)
+	return ch.t.Push(msg)
 }
