@@ -61,12 +61,9 @@ func (st *socketTransport) pingLoop() {
 
 func (st *socketTransport) listen() {
 	for {
-		fmt.Printf("reading message...\n")
-
 		msgType, data, err := st.socket.ReadMessage()
 
 		if err != nil {
-			fmt.Printf("ERROR: %v\n", err)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				fmt.Println(err)
 			}
@@ -76,8 +73,6 @@ func (st *socketTransport) listen() {
 		if msgType != websocket.TextMessage {
 			continue
 		}
-
-		fmt.Printf("Text data: %s\n", data)
 
 		var arr []interface{}
 		err = json.Unmarshal([]byte(data), &arr)
